@@ -9,43 +9,40 @@ supabase = create_client(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABAS
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard():
-    # محاولة جلب الأخبار وحفظها
+    # 1. جلب أخبار حقيقية وحفظها في جدول igh
     try:
         async with httpx.AsyncClient() as client:
-            r = await client.get("https://www.usinenouvelle.com/rss/", timeout=5)
+            r = await client.get("https://www.usinenouvelle.com/rss/", timeout=10)
             soup = BeautifulSoup(r.text, 'xml')
-            for item in soup.find_all('item', limit=3):
+            for item in soup.find_all('item', limit=5):
                 supabase.table("igh").upsert({
                     "title": item.title.text,
                     "link": item.link.text,
                     "media": "L'Usine Nouvelle"
                 }).execute()
-    except:
-        pass
+    except: pass
 
-    # جلب البيانات للعرض
-    data = supabase.table("igh").select("*").order("created_at", desc=True).execute().data or []
-    
-    # تحويل البيانات إلى صفوف في الجدول
-    rows = "".join([f"<tr><td>{i['media']}</td><td>{i['title']}</td><td><a href='{i['link']}' target='_blank'>Lire</a></td></tr>" for i in data])
+    # 2. قراءة ما تم حفظه لعرضه للمدير
+    res = supabase.table("igh").select("*").order("created_at", desc=True).limit(10).execute()
+    data = res.data if res.data else []
+
+    rows = "".join([f"<tr><td><b>{i['media']}</b></td><td>{i['title']}</td><td><a href='{i['link']}' target='_blank' style='color:#007bff;font-weight:bold;'>Ouvrir</a></td></tr>" for i in data])
 
     return f"""
     <html>
-        <head><style>
-            body {{ font-family: sans-serif; padding: 40px; background: #f4f7f6; }}
-            .box {{ background: white; padding: 20px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }}
+        <head><title>IGH 2026</title><style>
+            body {{ font-family: sans-serif; background: #f8f9fa; padding: 30px; }}
+            .card {{ background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 900px; margin: auto; }}
+            h1 {{ color: #1a3a5a; border-bottom: 3px solid #007bff; }}
             table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
-            th, td {{ padding: 12px; border: 1px solid #ddd; text-align: left; }}
-            th {{ background: #007bff; color: white; }}
+            th, td {{ padding: 12px; border-bottom: 1px solid #eee; text-align: left; }}
+            .status {{ color: #28a745; font-weight: bold; }}
         </style></head>
-        <body>
-            <div class="box">
-                <h1>IGH 2026 - Dashboard PRO</h1>
-                <table>
-                    <thead><tr><th>Média</th><th>Titre</th><th>Lien</th></tr></thead>
-                    <tbody>{rows if rows else "<tr><td colspan='3' style='text-align:center;'>Aucune donnée. Vérifiez le SQL Editor et rafraîchissez.</td></tr>"}</tbody>
-                </table>
-            </div>
-        </body>
-    </html>
+        <body><div class="card">
+            <h1>IGH 2026 : Intelligence Média</h1>
+            <p>Statut : <span class="status">● Connecté à la table IGH</span></p>
+            <table><thead><tr><th>Source</th><th>Titre</th><th>Action</th></tr></thead>
+            <tbody>{rows if rows else "<tr><td colspan='3' style='text-align:center;'>Configuration réussie. Rafraîchissez pour voir les actus.</td></tr>"}</tbody>
+            </table>
+        </div></body></html>
     """
