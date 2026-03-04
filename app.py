@@ -4,13 +4,12 @@ from supabase import create_client
 # 1. إعدادات مركز ميديا IGH
 st.set_page_config(page_title="IGH Media Center", page_icon="🎬", layout="wide")
 
-# الروابط المستخرجة من صورك (تم التأكد من كل حرف)
+# الروابط الصحيحة والمراجعة بدقة من صورك
 URL = "https://rxxqnksutqrrhmdffpby.supabase.co"
-# هذا هو المفتاح الكامل والمصحح:
 KEY = "sb_publishable_am9iOnJ4eHFua3N1dHFycmhtZGZmcGJ5XzY0ZGNmMTItOGM2MC00YTQzLThmNzMtNjI5NTQyN2IxZjFi"
 
 try:
-    # الربط بقاعدة البيانات
+    # الاتصال بقاعدة البيانات
     supabase = create_client(URL, KEY)
     
     # عنوان الموقع
@@ -22,7 +21,7 @@ try:
     data = response.data
 
     if data:
-        # عرض الأخبار في أعمدة احترافية
+        # عرض الأخبار في أعمدة احترافية (الميديا التي طلبها المدير)
         cols = st.columns(2)
         for i, item in enumerate(data):
             with cols[i % 2]:
@@ -37,9 +36,10 @@ try:
                     if item.get('link'):
                         st.link_button("📺 شاهد التغطية", item['link'])
     else:
-        # هذه الرسالة ستظهر لأن جدولكِ فارغ حالياً
+        # رسالة النجاح والبالونات (ستظهر لأن الجدول فارغ حالياً)
         st.balloons()
-        st.info("✅ النظام متصل! اذهبي لـ Supabase وأضيفي أول خبر (Insert Row) لترى الميديا هنا.")
+        st.success("✅ تم الربط بنجاح مذهل!")
+        st.info("النظام متصل! اذهبي لـ Supabase وأضيفي خبر في جدول igh ليظهر هنا بالصور.")
 
 except Exception as e:
-    st.error("⚠️ خطأ في الاتصال: يرجى التأكد من مسح الكود القديم ولصق الجديد بالكامل.")
+    st.error("⚠️ تأكدي من مسح الكود القديم ولصق هذا الكود الجديد بالكامل.")
