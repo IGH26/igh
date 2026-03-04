@@ -1,62 +1,65 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from supabase import create_client
-import os
-import httpx
+import os, httpx
 from bs4 import BeautifulSoup
 
 app = FastAPI()
 
-# إعدادات الربط
+# جلب الإعدادات
 url = os.environ.get("SUPABASE_URL")
 key = os.environ.get("SUPABASE_KEY")
 supabase = create_client(url, key)
 
-# 1. وظيفة جلب الأخبار (يجب أن تكون في الأعلى)
 @app.get("/fetch-news")
 async def fetch_news():
+    # المصادر المطلوبة حتماً
     sources = [
-        {"name": "L'Usine Nouvelle", "url": "https://www.usinenouvelle.com/rss/"},
-        {"name": "Les Echos", "url": "https://www.lesechos.fr/rss/rss_france.xml"}
+        {"n": "L'Usine Nouvelle", "u": "https://www.usinenouvelle.com/rss/"},
+        {"n": "Les Echos", "u": "https://www.lesechos.fr/rss/rss_france.xml"}
     ]
-    added = 0
+    count = 0
     async with httpx.AsyncClient() as client:
-        for src in sources:
+        for s in sources:
             try:
-                r = await client.get(src["url"])
-                soup = BeautifulSoup(r.text, 'xml')
-                for item in soup.find_all('item', limit=3):
+                res = await client.get(s["u"], timeout=10.0)
+                soup = BeautifulSoup(res.text, 'xml')
+                for item in soup.find_all('item', limit=5):
+                    # إدخال البيانات مع تجاوز الأخطاء
                     supabase.table("news").insert({
                         "title": item.title.text,
                         "link": item.link.text,
-                        "media": src["name"]
+                        "media": s["n"]
                     }).execute()
-                    added += 1
+                    count += 1
             except: continue
-    return {"Status": "Succès", "Articles": added}
+    return {"status": "success", "added": count}
 
-# 2. واجهة العرض الرئيسية
 @app.get("/", response_class=HTMLResponse)
 async def dashboard():
     try:
-        data = supabase.table("news").select("*").order("created_at", desc=True).limit(10).execute().data
+        # محاولة جلب البيانات
+        res = supabase.table("news").select("*").order("created_at", desc=True).limit(10).execute()
+        data = res.data
     except: data = []
-    
-    rows = "".join([f"<tr><td><b>{i['media']}</b></td><td>{i['title']}</td><td><a href='{i['link']}' target='_blank'>Lire</a></td></tr>" for i in data])
+
+    rows = "".join([f"<tr><td><b>{i['media']}</b></td><td>{i['title']}</td><td><a href='{i['link']}' target='_blank' style='color:#007bff;'>Lire</a></td></tr>" for i in data])
 
     return f"""
     <html>
         <head><title>IGH 2026</title><style>
-            body {{ font-family: sans-serif; background: #f8f9fa; padding: 20px; }}
-            .card {{ background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }}
+            body {{ font-family: sans-serif; background: #f4f7f6; padding: 20px; }}
+            .container {{ background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); max-width: 900px; margin: auto; }}
+            h1 {{ color: #1a3a5a; border-left: 5px solid #007bff; padding-left: 15px; }}
             table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
             th, td {{ padding: 12px; border-bottom: 1px solid #eee; text-align: left; }}
-            th {{ background: #1a3a5a; color: white; }}
+            th {{ background: #f8f9fa; }}
         </style></head>
-        <body><div class="card">
-            <h2>IGH 2026 : Intelligence Média</h2>
-            <table><thead><tr><th>Média</th><th>Titre</th><th>Action</th></tr></thead>
-            <tbody>{rows if rows else "<tr><td colspan='3'>Cliquez sur /fetch-news pour charger les données.</td></tr>"}</tbody>
+        <body><div class="container">
+            <h1>IGH 2026 : Intelligence Média & Innovation</h1>
+            <p>Statut : <span style="color:green;">● Opérationnel</span> | Media : Les Echos, L'Usine Nouvelle</p>
+            <table><thead><tr><th>Média</th><th>Titre de l'Actualité</th><th>Lien</th></tr></thead>
+            <tbody>{rows if rows else "<tr><td colspan='3' style='text-align:center;'>Aucune donnée. Visitez /fetch-news pour charger.</td></tr>"}</tbody>
             </table>
         </div></body></html>
     """
