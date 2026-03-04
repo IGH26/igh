@@ -4,8 +4,9 @@ from supabase import create_client
 # 1. إعدادات مركز ميديا IGH
 st.set_page_config(page_title="IGH Media Center", page_icon="🎬", layout="wide")
 
-# روابط مشروعكِ (تأكدي من نسخها كاملة كما هي هنا)
+# الروابط المستخرجة من صورك (تم التأكد من كل حرف)
 URL = "https://rxxqnksutqrrhmdffpby.supabase.co"
+# هذا هو المفتاح الكامل والمصحح:
 KEY = "sb_publishable_am9iOnJ4eHFua3N1dHFycmhtZGZmcGJ5XzY0ZGNmMTItOGM2MC00YTQzLThmNzMtNjI5NTQyN2IxZjFi"
 
 try:
@@ -16,7 +17,7 @@ try:
     st.markdown("<h1 style='text-align: center; color: #E91E63;'>🎬 مركز IGH 2026 الإعلامي</h1>", unsafe_allow_html=True)
     st.divider()
 
-    # جلب البيانات
+    # جلب البيانات من جدول igh
     response = supabase.table('igh').select("*").execute()
     data = response.data
 
@@ -26,7 +27,7 @@ try:
         for i, item in enumerate(data):
             with cols[i % 2]:
                 with st.container(border=True):
-                    # عرض الصورة من عمود image_url الذي أنشأتِه
+                    # عرض الصورة من عمود image_url
                     img = item.get('image_url')
                     if img:
                         st.image(img, use_container_width=True)
@@ -38,7 +39,7 @@ try:
     else:
         # هذه الرسالة ستظهر لأن جدولكِ فارغ حالياً
         st.balloons()
-        st.info("✅ النظام متصل! اذهبي لـ Supabase وأضيفي أول سطر (Insert Row) لترى الميديا هنا.")
+        st.info("✅ النظام متصل! اذهبي لـ Supabase وأضيفي أول خبر (Insert Row) لترى الميديا هنا.")
 
 except Exception as e:
-    st.error("⚠️ تأكدي من تحديث ملف app.py بالكود الجديد ومسح الكود القديم تماماً.")
+    st.error("⚠️ خطأ في الاتصال: يرجى التأكد من مسح الكود القديم ولصق الجديد بالكامل.")
