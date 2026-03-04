@@ -5,7 +5,7 @@ from supabase import create_client
 # 1. إعدادات واجهة الموقع
 st.set_page_config(page_title="منصة IGH للأخبار", page_icon="📰", layout="wide")
 
-# 2. روابط الربط الخاصة بكِ (تم وضعها بدقة من صورك)
+# 2. روابط الربط الخاصة بكِ (هذه هي الروابط التي دمجتها لكِ)
 URL = "https://rxxqnksutqrrhmdffpby.supabase.co"
 KEY = "sb_publishable_am9iOnJ4eHFua3N1dHFycmhtZGZmcGJ5XzY0ZGNmMTItOGM2MC00YTQzLThmNzMtNjI5NTQyN2IxZjFi"
 
@@ -22,7 +22,6 @@ try:
     data = response.data
 
     if data and len(data) > 0:
-        # عرض الأخبار إذا كانت موجودة
         for item in data:
             with st.container():
                 st.subheader(f"📌 {item.get('title', 'خبر جديد')}")
@@ -31,7 +30,6 @@ try:
                     st.link_button("🔗 قراءة الخبر كاملاً", item['link'])
                 st.divider()
     else:
-        # رسالة النجاح والبالونات إذا كان الجدول فارغاً
         st.balloons()
         st.success("✅ مبروك! الموقع يعمل ومرتبط بنجاح بـ Supabase.")
         st.info("الموقع فارغ حالياً لأن جدول 'igh' لا يحتوي على بيانات. أضيفي خبراً في Supabase لتريه هنا!")
