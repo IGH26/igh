@@ -1,29 +1,49 @@
 import streamlit as st
 from supabase import create_client
 
-# إعدادات الواجهة
-st.set_page_config(page_title="لوحة تحكم IGH 2026", layout="wide")
+# Configuration de la page
+st.set_page_config(page_title="Dashboard IGH 2026", layout="wide", page_icon="📊")
 
-# الربط (تأكد أن الأسماء مطابقة لـ Secrets)
-url = st.secrets["SUPABASE_URL"]
-key = st.secrets["SUPABASE_KEY"]
-supabase = create_client(url, key)
-
-st.title("📊 لوحة تحكم مركز IGH 2026")
-
-# تجربة جلب البيانات مع معالجة الخطأ
+# Connexion sécurisée
 try:
-    res = supabase.table("news").select("*").execute()
-    st.success("✅ النظام متصل وجاهز!")
-    
-    # واجهة إضافة الأخبار
-    with st.form("add_news"):
-        title = st.text_input("عنوان الخبر")
-        content = st.text_area("نص الخبر")
-        if st.form_submit_button("نشر"):
-            supabase.table("news").insert({"title": title, "content": content}).execute()
-            st.rerun()
+    url = st.secrets["SUPABASE_URL"]
+    key = st.secrets["SUPABASE_KEY"]
+    supabase = create_client(url, key)
+except Exception:
+    st.error("⚠️ Erreur : Clés API manquantes dans Streamlit Secrets.")
 
-except Exception as e:
-    st.error(f"يوجد مشكلة في الجدول: {e}")
-    st.info("إذا رأيت هذا الخطأ، اضغط على Reboot App من قائمة Manage app")
+st.title("📊 Dashboard Média IGH 2026")
+st.markdown("---")
+
+# Onglets
+tab1, tab2 = st.tabs(["🆕 Publier", "📰 Actualités"])
+
+with tab1:
+    with st.form("form_news", clear_on_submit=True):
+        st.subheader("Nouvel Article")
+        title = st.text_input("Titre de l'actualité")
+        category = st.selectbox("Catégorie", ["Urgent", "Événement", "Sport", "Culture"])
+        content = st.text_area("Texte de l'article")
+        
+        if st.form_submit_button("Publier sur le site"):
+            if title and content:
+                try:
+                    supabase.table("news").insert({"title": title, "content": content, "category": category}).execute()
+                    st.success("✅ Publié avec succès !")
+                except Exception as e:
+                    st.error(f"Erreur : {e}")
+            else:
+                st.warning("Veuillez remplir tous les champs.")
+
+with tab2:
+    st.subheader("Articles récents")
+    try:
+        res = supabase.table("news").select("*").order("created_at", desc=True).execute()
+        for item in res.data:
+            with st.expander(f"📌 {item['title']} ({item['category']})"):
+                st.write(item['content'])
+                if st.button("Supprimer", key=item['id']):
+                    supabase.table("news").delete().eq("id", item['id']).execute()
+                    st.rerun()
+    except Exception:
+        st.info("Aucune donnée disponible pour le moment.")
