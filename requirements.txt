@@ -2,4 +2,3 @@ fastapi
 supabase
 httpx
 beautifulsoup4
-lxml
