@@ -15,9 +15,6 @@ def read_root():
 
 @app.get("/fetch-news")
 def fetch_news():
-    # Ici nous ajouterons plus tard le code de Scraping automatique
-    # Pour l'instant, c'est le point d'entrée pour GitHub Actions
     return {"message": "Moteur de collecte prêt"}
 
-# السطر الضروري لـ Vercel
 app = app
