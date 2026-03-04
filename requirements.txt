@@ -1,5 +1,1 @@
-streamlit
-pandas
-supabase
-requests
-beautifulsoup4
+gunicorn
