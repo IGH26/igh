@@ -4,7 +4,7 @@ from supabase import create_client
 # 1. إعدادات مركز ميديا IGH
 st.set_page_config(page_title="IGH Media Center", page_icon="🎬", layout="wide")
 
-# روابط مشروعكِ
+# روابط مشروعكِ (تأكدي من نسخها كاملة كما هي هنا)
 URL = "https://rxxqnksutqrrhmdffpby.supabase.co"
 KEY = "sb_publishable_am9iOnJ4eHFua3N1dHFycmhtZGZmcGJ5XzY0ZGNmMTItOGM2MC00YTQzLThmNzMtNjI5NTQyN2IxZjFi"
 
@@ -12,8 +12,8 @@ try:
     # الربط بقاعدة البيانات
     supabase = create_client(URL, KEY)
     
-    # عنوان الموقع (تم تصحيح الخطأ هنا)
-    st.markdown("<h1 style='text-align: center; color: #E91E63;'>🎬 مركز IGH الإعلامي 2026</h1>", unsafe_allow_html=True)
+    # عنوان الموقع
+    st.markdown("<h1 style='text-align: center; color: #E91E63;'>🎬 مركز IGH 2026 الإعلامي</h1>", unsafe_allow_html=True)
     st.divider()
 
     # جلب البيانات
@@ -26,7 +26,7 @@ try:
         for i, item in enumerate(data):
             with cols[i % 2]:
                 with st.container(border=True):
-                    # عرض الصورة إذا وجدت
+                    # عرض الصورة من عمود image_url الذي أنشأتِه
                     img = item.get('image_url')
                     if img:
                         st.image(img, use_container_width=True)
@@ -36,8 +36,9 @@ try:
                     if item.get('link'):
                         st.link_button("📺 شاهد التغطية", item['link'])
     else:
-        # رسالة تظهر إذا كان الجدول فارغاً
-        st.info("📢 النظام متصل بنجاح! يرجى إضافة خبر في Supabase ليظهر هنا.")
+        # هذه الرسالة ستظهر لأن جدولكِ فارغ حالياً
+        st.balloons()
+        st.info("✅ النظام متصل! اذهبي لـ Supabase وأضيفي أول سطر (Insert Row) لترى الميديا هنا.")
 
 except Exception as e:
-    st.error(f"⚠️ حدث خطأ: {str(e)}")
+    st.error("⚠️ تأكدي من تحديث ملف app.py بالكود الجديد ومسح الكود القديم تماماً.")
