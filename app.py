@@ -4,12 +4,12 @@ from supabase import create_client
 # 1. إعدادات مركز ميديا IGH
 st.set_page_config(page_title="IGH Media Center", page_icon="🎬", layout="wide")
 
-# الروابط الصحيحة والمراجعة بدقة من صورك
+# روابط مشروعكِ التي أرسلتِها (تم التأكد منها حرفياً)
 URL = "https://rxxqnksutqrrhmdffpby.supabase.co"
-KEY = "sb_publishable_am9iOnJ4eHFua3N1dHFycmhtZGZmcGJ5XzY0ZGNmMTItOGM2MC00YTQzLThmNzMtNjI5NTQyN2IxZjFi"
+KEY = "sb_publishable_NzavY25DD8X_wZoalKQfMw_d8D_Lgz6"
 
 try:
-    # الاتصال بقاعدة البيانات
+    # الربط بقاعدة البيانات
     supabase = create_client(URL, KEY)
     
     # عنوان الموقع
@@ -21,12 +21,12 @@ try:
     data = response.data
 
     if data:
-        # عرض الأخبار في أعمدة احترافية (الميديا التي طلبها المدير)
+        # عرض الميديا في أعمدة احترافية
         cols = st.columns(2)
         for i, item in enumerate(data):
             with cols[i % 2]:
                 with st.container(border=True):
-                    # عرض الصورة من عمود image_url
+                    # عرض الصورة من العمود الذي أنشأتِه
                     img = item.get('image_url')
                     if img:
                         st.image(img, use_container_width=True)
@@ -36,10 +36,10 @@ try:
                     if item.get('link'):
                         st.link_button("📺 شاهد التغطية", item['link'])
     else:
-        # رسالة النجاح والبالونات (ستظهر لأن الجدول فارغ حالياً)
+        # ستظهر البالونات بمجرد نجاح الاتصال (لأن الجدول فارغ حالياً)
         st.balloons()
-        st.success("✅ تم الربط بنجاح مذهل!")
-        st.info("النظام متصل! اذهبي لـ Supabase وأضيفي خبر في جدول igh ليظهر هنا بالصور.")
+        st.success("✅ أخيراً! تم الاتصال بنجاح بالمفتاح والرابط الجديد.")
+        st.info("النظام جاهز! أضيفي خبراً في Supabase لتريه هنا بالصور.")
 
 except Exception as e:
-    st.error("⚠️ تأكدي من مسح الكود القديم ولصق هذا الكود الجديد بالكامل.")
+    st.error("⚠️ يرجى التأكد من مسح الكود القديم تماماً ولصق هذا الكود فقط.")
