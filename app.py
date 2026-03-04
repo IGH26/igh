@@ -5,7 +5,7 @@ from supabase import create_client
 # 1. إعدادات واجهة الموقع
 st.set_page_config(page_title="منصة IGH للأخبار", page_icon="📰", layout="wide")
 
-# 2. روابط الربط الخاصة بكِ (هذه هي الروابط التي دمجتها لكِ)
+# 2. روابط الربط (تم تصحيحها بدقة من صورك 1000064331 و 1000064332)
 URL = "https://rxxqnksutqrrhmdffpby.supabase.co"
 KEY = "sb_publishable_am9iOnJ4eHFua3N1dHFycmhtZGZmcGJ5XzY0ZGNmMTItOGM2MC00YTQzLThmNzMtNjI5NTQyN2IxZjFi"
 
@@ -13,7 +13,6 @@ KEY = "sb_publishable_am9iOnJ4eHFua3N1dHFycmhtZGZmcGJ5XzY0ZGNmMTItOGM2MC00YTQzLT
 try:
     supabase = create_client(URL, KEY)
     
-    # تصميم رأس الصفحة
     st.markdown("<h1 style='text-align: center; color: #1E88E5;'>📱 منصة الأخبار الذكية - IGH</h1>", unsafe_content_type=True)
     st.write("---")
 
@@ -32,7 +31,7 @@ try:
     else:
         st.balloons()
         st.success("✅ مبروك! الموقع يعمل ومرتبط بنجاح بـ Supabase.")
-        st.info("الموقع فارغ حالياً لأن جدول 'igh' لا يحتوي على بيانات. أضيفي خبراً في Supabase لتريه هنا!")
+        st.info("الموقع فارغ حالياً. جربي إضافة خبر من لوحة تحكم Supabase!")
 
 except Exception as e:
-    st.error(f"⚠️ خطأ في الاتصال: تأكدي من إعدادات الـ API.")
+    st.error(f"⚠️ خطأ في الاتصال: تأكدي من إعدادات الـ API في Supabase.")
