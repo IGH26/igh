@@ -9,7 +9,7 @@ supabase = create_client(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABAS
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard():
-    # 1. جلب أخبار حقيقية وحفظها في جدول igh
+    # محاولة سحب الأخبار
     try:
         async with httpx.AsyncClient() as client:
             r = await client.get("https://www.usinenouvelle.com/rss/", timeout=10)
@@ -22,27 +22,23 @@ async def dashboard():
                 }).execute()
     except: pass
 
-    # 2. قراءة ما تم حفظه لعرضه للمدير
-    res = supabase.table("igh").select("*").order("created_at", desc=True).limit(10).execute()
-    data = res.data if res.data else []
-
-    rows = "".join([f"<tr><td><b>{i['media']}</b></td><td>{i['title']}</td><td><a href='{i['link']}' target='_blank' style='color:#007bff;font-weight:bold;'>Ouvrir</a></td></tr>" for i in data])
+    # عرض البيانات
+    data = supabase.table("igh").select("*").order("created_at", desc=True).execute().data or []
+    rows = "".join([f"<tr><td><b>{i['media']}</b></td><td>{i['title']}</td><td><a href='{i['link']}' target='_blank'>VOIR</a></td></tr>" for i in data])
 
     return f"""
     <html>
-        <head><title>IGH 2026</title><style>
-            body {{ font-family: sans-serif; background: #f8f9fa; padding: 30px; }}
-            .card {{ background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 900px; margin: auto; }}
-            h1 {{ color: #1a3a5a; border-bottom: 3px solid #007bff; }}
+        <head><style>
+            body {{ font-family: sans-serif; padding: 20px; background: #f0f2f5; }}
+            .card {{ background: white; padding: 25px; border-radius: 10px; max-width: 800px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }}
+            h1 {{ color: #1a3a5a; border-left: 5px solid #007bff; padding-left: 10px; }}
             table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
             th, td {{ padding: 12px; border-bottom: 1px solid #eee; text-align: left; }}
-            .status {{ color: #28a745; font-weight: bold; }}
         </style></head>
         <body><div class="card">
-            <h1>IGH 2026 : Intelligence Média</h1>
-            <p>Statut : <span class="status">● Connecté à la table IGH</span></p>
-            <table><thead><tr><th>Source</th><th>Titre</th><th>Action</th></tr></thead>
-            <tbody>{rows if rows else "<tr><td colspan='3' style='text-align:center;'>Configuration réussie. Rafraîchissez pour voir les actus.</td></tr>"}</tbody>
+            <h1>IGH 2026 : Système Opérationnel</h1>
+            <table><thead><tr><th>Source</th><th>Actualité</th><th>Lien</th></tr></thead>
+            <tbody>{rows if rows else "<tr><td colspan='3' style='text-align:center;'>Connexion établie. Rafraîchissez la page une fois.</td></tr>"}</tbody>
             </table>
         </div></body></html>
     """
