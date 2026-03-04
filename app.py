@@ -2,31 +2,39 @@ import streamlit as st
 import pandas as pd
 from supabase import create_client
 
-# إعداد واجهة الموقع
-st.set_page_config(page_title="تطبيق الأخبار IGH", layout="wide")
-st.title("📰 منصة الأخبار الذكية - IGH")
+# 1. إعدادات واجهة الموقع
+st.set_page_config(page_title="منصة IGH للأخبار", page_icon="📰", layout="wide")
 
-# بيانات الربط مع Supabase (سنملأها في الخطوة القادمة)
-URL = "رابط_مشروعك_هنا"
-KEY = "مفتاح_API_الخاص_بك_هنا"
+# 2. روابط الربط الخاصة بكِ (تم وضعها بدقة من صورك)
+URL = "https://rxxqnksutqrrhmdffpby.supabase.co"
+KEY = "sb_publishable_am9iOnJ4eHFua3N1dHFycmhtZGZmcGJ5XzY0ZGNmMTItOGM2MC00YTQzLThmNzMtNjI5NTQyN2IxZjFi"
 
+# 3. محاولة الاتصال وعرض البيانات
 try:
     supabase = create_client(URL, KEY)
     
+    # تصميم رأس الصفحة
+    st.markdown("<h1 style='text-align: center; color: #1E88E5;'>📱 منصة الأخبار الذكية - IGH</h1>", unsafe_content_type=True)
+    st.write("---")
+
     # جلب البيانات من جدول igh
     response = supabase.table('igh').select("*").execute()
     data = response.data
 
-    if data:
-        df = pd.DataFrame(data)
-        for index, row in df.iterrows():
+    if data and len(data) > 0:
+        # عرض الأخبار إذا كانت موجودة
+        for item in data:
             with st.container():
-                st.subheader(row['title'])
-                st.write(f"🔗 [رابط الخبر]({row['link']})")
-                st.caption(f"📅 تاريخ النشر: {row['date']}")
+                st.subheader(f"📌 {item.get('title', 'خبر جديد')}")
+                st.write(item.get('content', 'لا يوجد محتوى حالياً.'))
+                if item.get('link'):
+                    st.link_button("🔗 قراءة الخبر كاملاً", item['link'])
                 st.divider()
     else:
-        st.warning("المخزن فارغ حالياً! نحن بانتظار وصول الأخبار الجديدة.")
+        # رسالة النجاح والبالونات إذا كان الجدول فارغاً
+        st.balloons()
+        st.success("✅ مبروك! الموقع يعمل ومرتبط بنجاح بـ Supabase.")
+        st.info("الموقع فارغ حالياً لأن جدول 'igh' لا يحتوي على بيانات. أضيفي خبراً في Supabase لتريه هنا!")
 
 except Exception as e:
-    st.error(f"خطأ في الاتصال بالقاعدة: {e}")
+    st.error(f"⚠️ خطأ في الاتصال: تأكدي من إعدادات الـ API.")
