@@ -7,20 +7,26 @@ from bs4 import BeautifulSoup
 app = FastAPI()
 
 # الاتصال بـ Supabase
-supabase = create_client(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_KEY"))
+url = os.environ.get("SUPABASE_URL")
+key = os.environ.get("SUPABASE_KEY")
+supabase = create_client(url, key)
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard():
-    # محاولة سحب أخبار جديدة وحفظها في كل مرة تفتح فيها الصفحة (لضمان التحديث)
+    # محاولة جلب أخبار تلقائياً عند فتح الصفحة لملء الجدول
     try:
         async with httpx.AsyncClient() as client:
-            r = await client.get("https://www.usinenouvelle.com/rss/", timeout=5)
-            soup = BeautifulSoup(r.text, 'xml')
-            for item in soup.find_all('item', limit=3):
-                supabase.table("news").upsert({"title": item.title.text, "link": item.link.text, "media": "L'Usine Nouvelle"}).execute()
+            res = await client.get("https://www.usinenouvelle.com/rss/", timeout=5)
+            soup = BeautifulSoup(res.text, 'xml')
+            for item in soup.find_all('item', limit=5):
+                supabase.table("news").upsert({
+                    "title": item.title.text, 
+                    "link": item.link.text, 
+                    "media": "L'Usine Nouvelle"
+                }).execute()
     except: pass
 
-    # جلب البيانات للعرض
+    # جلب البيانات لعرضها للمدير
     try:
         data = supabase.table("news").select("*").order("created_at", desc=True).limit(10).execute().data
     except: data = []
@@ -39,11 +45,9 @@ async def dashboard():
         </style></head>
         <body><div class="card">
             <h1>IGH 2026 : Intelligence Média & Innovation</h1>
-            <p>Statut : <span style="color:green;">● Système Actif</span> | Sources : Les Echos, L'Usine Nouvelle</p>
-            <table><thead><tr><th>Média</th><th>Titre</th><th>Action</th></tr></thead>
-            <tbody>{rows if rows else "<tr><td colspan='3' style='text-align:center;'>Mise à jour des flux en cours...</td></tr>"}</tbody>
+            <p>Statut : <span style="color:green;">● Système Opérationnel</span> | Media : Les Echos, L'Usine Nouvelle</p>
+            <table><thead><tr><th>Média Source</th><th>Titre de l'Actualité</th><th>Action</th></tr></thead>
+            <tbody>{rows if rows else "<tr><td colspan='3' style='text-align:center; padding:30px;'>Initialisation des données... Rafraîchissez la page dans 10 secondes.</td></tr>"}</tbody>
             </table>
         </div></body></html>
     """
-
-app = app
